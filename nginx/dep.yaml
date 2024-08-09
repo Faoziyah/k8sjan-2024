@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      type: nginx
+  template:
+    metadata:
+      name: nginx
+      labels:
+        type: nginx
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.14.2
+      initContainers:
+        - name: gitclone
+          image: alpine
+          command:  [ "sh", "-c", "apk add --no-cache git", "git clone https://github.com/octocat/Spoon-Knife /www" ]

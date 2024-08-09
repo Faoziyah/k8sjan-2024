@@ -1,0 +1,50 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: pl-sva
+  namespace: demo
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: pl-sva-secret
+  annotations:
+    kubernetes.io/service-account.name: pl-sva
+type: kubernetes.io/service-account-token
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: demo
+  name: pod-reader
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "watch", "list","delete"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: pod-reader-binding
+  namespace: demo
+roleRef: # points to the Role
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: pod-reader # name of Role
+subjects: # points to the ServiceAccount
+- kind: ServiceAccount
+  name: pl-sva # service account to bind to
+  namespace: demo # ns of service account
+---
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-kubectl
+  namespace: demo
+spec:
+  containers:
+  - image: bibinwilson/docker-kubectl:latest
+    name: kubectl
+  serviceAccountName: pl-sva
